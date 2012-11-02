@@ -278,7 +278,7 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
     for (node = ptr->children; node; node = node->next)
         if (node->type == XML_ELEMENT_NODE && !strcmp((const char *) node->name, "int"))
             scr->num_terms++;
-    
+
     if (scr->num_terms)
         scr->terms = odr_malloc(o, sizeof(*scr->terms) * scr->num_terms);
     
@@ -291,7 +291,7 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
             /* <int name="aa">2326</int> */
             Odr_int count = 0;
             const char *val = get_facet_term_count(node, &count);
-            
+
             term->numberOfRecords = odr_intdup(o, count);
             
             term->value = odr_strdup(o, val);
@@ -350,7 +350,6 @@ int yaz_solr_decode_response(ODR o, Z_HTTP_Response *hres, Z_SRW_PDU **pdup)
                 }
                 if (ptr->type == XML_ELEMENT_NODE &&
                     match_xml_node_attribute(ptr, "lst", "name", "terms")) {
-                        fprintf(stderr, "in decode result\n");
                         pdu = yaz_srw_get(o, Z_SRW_scan_response);
                         scr = pdu->u.scan_response;
                         rc_result = yaz_solr_decode_scan_result(o, ptr, scr);
@@ -507,12 +506,17 @@ int yaz_solr_encode_request(Z_HTTP_Request *hreq, Z_SRW_PDU *srw_pdu,
             case Z_SRW_query_type_cql:
                 q = request->scanClause.cql;
                 pos = strchr(q, ':');
-                yaz_add_name_value_str(encode, name, value, &i,
-                                       "terms.lower", odr_strdup(encode, pos + 1));
-                *pos = '\0';
-                yaz_add_name_value_str(encode, name, value, &i,
-                                       "terms.fl", odr_strdup(encode, q));
-                *pos = ':';
+                if (pos != NULL) {
+					yaz_add_name_value_str(encode, name, value, &i,
+										   "terms.lower", odr_strdup(encode, pos + 1));
+					*pos = '\0';
+					yaz_add_name_value_str(encode, name, value, &i,
+										   "terms.fl", odr_strdup(encode, q));
+					*pos = ':';
+                } else {
+					yaz_add_name_value_str(encode, name, value, &i,
+										   "terms.lower", odr_strdup(encode, q));
+                }
                 break;
             default:
                 return -1;
