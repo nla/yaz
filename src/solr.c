@@ -288,15 +288,13 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
         {
             Z_SRW_scanTerm *term = scr->terms + i;
             
-            /* <int name="aa">2326</int> */
             Odr_int count = 0;
             const char *val = get_facet_term_count(node, &count);
 
             term->numberOfRecords = odr_intdup(o, count);
             
             term->value = odr_strdup(o, val);
-            term->displayTerm = odr_strdup(o, val);
-            term->whereInList = odr_strdup(o, val);
+            /* term->displayTerm = odr_strdup(o, val); */
             
             i++;
         }
