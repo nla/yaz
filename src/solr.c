@@ -294,7 +294,9 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
             term->numberOfRecords = odr_intdup(o, count);
             
             term->value = odr_strdup(o, val);
+            term->displayTerm = NULL;
             /* term->displayTerm = odr_strdup(o, val); */
+            term->whereInList = NULL;
             
             i++;
         }
