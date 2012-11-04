@@ -290,12 +290,15 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
             
             Odr_int count = 0;
             const char *val = get_facet_term_count(node, &count);
+            const char *displayval = yaz_element_attribute_value_get(node, "int", "displayname");
 
             term->numberOfRecords = odr_intdup(o, count);
             
             term->value = odr_strdup(o, val);
-            term->displayTerm = NULL;
-            /* term->displayTerm = odr_strdup(o, val); */
+            if (displayval)
+            	term->displayTerm = odr_strdup(o, displayval);
+            else
+            	term->displayTerm = NULL;
             term->whereInList = NULL;
             
             i++;
