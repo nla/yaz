@@ -265,6 +265,7 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
 {
     xmlNodePtr node;
     xmlAttr *attr;
+    char *pos;
     int i = 0;
     
     /* find the actual list */
@@ -290,15 +291,22 @@ static int yaz_solr_decode_scan_result(ODR o, xmlNodePtr ptr,
             
             Odr_int count = 0;
             const char *val = get_facet_term_count(node, &count);
-            const char *displayval = yaz_element_attribute_value_get(node, "int", "displayname");
 
             term->numberOfRecords = odr_intdup(o, count);
             
-            term->value = odr_strdup(o, val);
-            if (displayval)
-            	term->displayTerm = odr_strdup(o, displayval);
-            else
+            /* if val contains a ^ then it is probably term<^>display term so separate them. This is due to
+             * SOLR not being able to encode them into 2 separate attributes.
+             */
+            pos = strchr(val, '^');
+            if (pos != NULL) {
+            	term->displayTerm = odr_strdup(o, pos + 1);
+            	*pos = '\0';
+            	term->value = odr_strdup(o, val);
+            	*pos = '^';
+            } else {
+            	term->value = odr_strdup(o, val);
             	term->displayTerm = NULL;
+            }
             term->whereInList = NULL;
             
             i++;
